@@ -1,0 +1,21 @@
+# Transform df1
+start = time.time()
+
+df1_ = df1.withColumn('categorias', split('categorias', ','))
+df1_ = df1_.withColumn('categorias', explode('categorias'))
+
+pivot = df1_.groupBy('id_cliente').pivot('categorias').agg(lit(1)).fillna(0).orderBy(split("id_cliente","-")[1].cast(IntegerType()))
+
+pivotColumns = pivot.columns
+c0 = pivotColumns.pop(0)
+def order(item):
+  return int(item.split('-')[1])
+pivotColumns = sorted(pivotColumns, key=order)
+pivotColumns.insert(0,c0)
+
+pivot.show()
+
+pivot.select(pivotColumns).show()
+
+
+print(time.time() - start)
